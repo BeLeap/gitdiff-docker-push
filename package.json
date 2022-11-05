@@ -5,11 +5,12 @@
   "author": "BeLeap <beleap@beleap.dev>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js"
   },
   "packageManager": "yarn@3.2.4",
   "devDependencies": {
     "@types/node": "^18.11.9",
+    "esbuild": "^0.15.13",
     "typescript": "^4.8.4"
   }
 }

@@ -1,2 +1,3 @@
-let foobar: string = "Hello, World!";
+import { foobar } from "./const";
+
 console.log(foobar);
