@@ -4,5 +4,12 @@
   "main": "index.js",
   "author": "BeLeap <beleap@beleap.dev>",
   "license": "MIT",
-  "packageManager": "yarn@3.2.4"
+  "scripts": {
+    "build": "tsc"
+  },
+  "packageManager": "yarn@3.2.4",
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "typescript": "^4.8.4"
+  }
 }
