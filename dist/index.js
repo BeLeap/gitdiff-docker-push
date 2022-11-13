@@ -11291,6 +11291,7 @@ async function main() {
         ...import_github.context.repo,
         ref: tagPrefix
       });
+      core2.debug(`data: ${JSON.stringify(data2)}`);
       const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).sort().reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
