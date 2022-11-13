@@ -5,6 +5,8 @@ const main = () => {
   const registry = core.getInput('registry', { required: false });
   const username = core.getInput('username', { required: false });
   const password = core.getInput('password', { required: false });
+
+  core.setSecret(password);
 }
 
 main();
