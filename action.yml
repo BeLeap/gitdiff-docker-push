@@ -1,0 +1,14 @@
+name: 'GitDiff Docker push'
+description: 'Check git diff & Push docker images'
+inputs:
+  github-token:
+    required: false
+  registry:
+    required: true
+  username:
+    required: true
+  password:
+    required: true
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
