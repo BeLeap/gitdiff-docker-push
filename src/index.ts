@@ -35,6 +35,8 @@ const main = async () => {
   const registry = core.getInput('registry', { required: false });
   const configFileName = core.getInput('config-file-name', { required: false });
 
+  core.debug(`input: ${JSON.stringify({ registry, configFileName })}`);
+
   if (context.eventName !== "push") {
     throw new Error(`${context.eventName} not supported`);
   }
