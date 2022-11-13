@@ -52,28 +52,32 @@ const main = async () => {
   core.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
 
   const promises = diffingDirs.map(async (dir) => {
-    const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(`${dir}/${configFileName}`, 'utf-8')) as any;
-    core.debug(`configFile: ${configFile}`);
-    const tagPrefix = `refs/tags/${configFile.repository}-`;
-    const { data } = await octokit.rest.git.listMatchingRefs({
-      ...context.repo,
-      ref: tagPrefix,
-    });
-    const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).reverse()[0];
-    core.debug(`latestVersion: ${latestVersion}`);
+    const configFilePath = `${dir}/${configFileName}`;
 
-    const newHeadVer = generateHeadVer(configFile.head, latestVersion);
-    core.debug(`newHeadVer: ${newHeadVer}`);
+    if (fs.existsSync(configFilePath)) {
+      const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
+      core.debug(`configFile: ${configFile}`);
+      const tagPrefix = `refs/tags/${configFile.repository}-`;
+      const { data } = await octokit.rest.git.listMatchingRefs({
+        ...context.repo,
+        ref: tagPrefix,
+      });
+      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).reverse()[0];
+      core.debug(`latestVersion: ${latestVersion}`);
 
-    const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`
+      const newHeadVer = generateHeadVer(configFile.head, latestVersion);
+      core.debug(`newHeadVer: ${newHeadVer}`);
 
-    await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
-    await exec.exec("docker", ["push", newImageTag]);
-    return octokit.rest.git.createRef({
-      ...context.repo,
-      ref: `${tagPrefix}${newHeadVer}`,
-      sha: context.payload["after"],
-    });
+      const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`
+
+      await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
+      await exec.exec("docker", ["push", newImageTag]);
+      return octokit.rest.git.createRef({
+        ...context.repo,
+        ref: `${tagPrefix}${newHeadVer}`,
+        sha: context.payload["after"],
+      });
+    }
   });
   await Promise.all(promises);
 }
