@@ -73,7 +73,7 @@ async function main() {
 
       const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`
 
-      await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
+      await exec.exec("docker", ["build", "--tag", newImageTag, dir]);
       await exec.exec("docker", ["push", newImageTag]);
       return octokit.rest.git.createRef({
         ...context.repo,
