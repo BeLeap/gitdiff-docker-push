@@ -15,8 +15,8 @@ const getWeekNumber = (date: Date): number => {
   return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
 }
 
-const generateHeadVer = (head: number, previous: string): string => {
-  const previousHeadVer = previous.split('.').map((it) => parseInt(it)) ?? [0, 0, 0];
+const generateHeadVer = (head: number, previous: string = '0.0.0'): string => {
+  const previousHeadVer = previous.split('.').map((it) => parseInt(it));
   const previousHead = previousHeadVer[0];
 
   let newBuildVer: number;
