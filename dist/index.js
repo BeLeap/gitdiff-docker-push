@@ -11263,7 +11263,7 @@ var generateHeadVer = (head, previous) => {
   const date = new Date();
   return `${head}.${date.getFullYear() % 100}${getWeekNumber(date)}.${newBuildVer}`;
 };
-var main = async () => {
+async function main() {
   const githubToken = core2.getInput("github-token", { required: false });
   const registry = core2.getInput("registry", { required: false });
   const configFileName = core2.getInput("config-file-name", { required: false });
@@ -11305,7 +11305,7 @@ var main = async () => {
     }
   });
   await Promise.all(promises);
-};
+}
 main();
 /*!
  * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
