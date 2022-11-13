@@ -59,13 +59,13 @@ async function main() {
 
     if (fs.existsSync(configFilePath)) {
       const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
-      core.debug(`configFile: ${configFile}`);
+      core.debug(`configFile: ${JSON.stringify(configFile)}`);
       const tagPrefix = `refs/tags/${configFile.repository}-`;
       const { data } = await octokit.rest.git.listMatchingRefs({
         ...context.repo,
         ref: tagPrefix,
       });
-      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).reverse()[0];
+      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).sort().reverse()[0];
       core.debug(`latestVersion: ${latestVersion}`);
 
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
