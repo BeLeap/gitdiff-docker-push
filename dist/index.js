@@ -11277,7 +11277,7 @@ var main = async () => {
     head: import_github.context.payload["after"]
   });
   const diffingFiles = data.files ?? [];
-  const diffingDirs = diffingFiles.filter((it) => it.filename.includes(configFileName)).map((it) => import_path.default.dirname(it.filename));
+  const diffingDirs = diffingFiles.filter((it) => it.filename.includes(configFileName) || it.filename.includes("Dockerfile")).map((it) => import_path.default.dirname(it.filename));
   core2.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
   const promises = diffingDirs.map(async (dir) => {
     const configFile = load(fs.readFileSync(`${dir}/${configFileName}`, "utf-8"));
