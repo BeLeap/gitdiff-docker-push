@@ -55,6 +55,7 @@ async function main() {
 
   const promises = diffingDirs.map(async (dir) => {
     const configFilePath = `${dir}/${configFileName}`;
+    core.debug(`configFilePath: ${configFilePath}`);
 
     if (fs.existsSync(configFilePath)) {
       const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
