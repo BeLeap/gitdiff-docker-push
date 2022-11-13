@@ -11282,6 +11282,7 @@ async function main() {
   core2.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
   const promises = diffingDirs.map(async (dir) => {
     const configFilePath = `${dir}/${configFileName}`;
+    core2.debug(`configFilePath: ${configFilePath}`);
     if (fs.existsSync(configFilePath)) {
       const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
       core2.debug(`configFile: ${configFile}`);
