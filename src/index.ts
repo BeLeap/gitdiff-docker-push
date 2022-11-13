@@ -47,7 +47,7 @@ const main = async () => {
   });
 
   const diffingFiles = data.files ?? [];
-  const diffingDirs = diffingFiles.filter(it => it.filename.includes(configFileName) || it.filename.includes("Dockerfile")).map(it => path.dirname(it.filename));
+  const diffingDirs = Array.from(new Set(diffingFiles.filter(it => it.filename.includes(configFileName) || it.filename.includes("Dockerfile")).map(it => path.dirname(it.filename))));
 
   core.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
 
