@@ -4,7 +4,8 @@ inputs:
   github-token:
     required: false
   registry:
-    required: true
+    required: false
+    default: 'registry.hub.docker.com'
   username:
     required: true
   password:
