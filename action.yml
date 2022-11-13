@@ -6,10 +6,9 @@ inputs:
   registry:
     required: false
     default: 'registry.hub.docker.com'
-  username:
+  config-file-name:
     required: false
-  password:
-    required: false
+    default: 'dockermeta.yaml'
 runs:
   using: 'node16'
   main: 'dist/index.js'
