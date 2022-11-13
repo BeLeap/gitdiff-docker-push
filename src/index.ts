@@ -30,7 +30,7 @@ const generateHeadVer = (head: number, previous: string): string => {
   return `${head}.${date.getFullYear() % 100}${getWeekNumber(date)}.${newBuildVer}`;
 }
 
-const main = async () => {
+async function main() {
   const githubToken = core.getInput('github-token', { required: false });
   const registry = core.getInput('registry', { required: false });
   const configFileName = core.getInput('config-file-name', { required: false });
