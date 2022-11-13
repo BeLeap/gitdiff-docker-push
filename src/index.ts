@@ -16,7 +16,7 @@ const getWeekNumber = (date: Date): number => {
 }
 
 const generateHeadVer = (head: number, previous: string): string => {
-  const previousHeadVer = previous.split('.').map((it) => parseInt(it));
+  const previousHeadVer = previous.split('.').map((it) => parseInt(it)) ?? [0, 0, 0];
   const previousHead = previousHeadVer[0];
 
   let newBuildVer: number;
@@ -49,16 +49,21 @@ const main = async () => {
   const diffingFiles = data.files ?? [];
   const diffingDirs = diffingFiles.filter(it => it.filename.includes(configFileName)).map(it => path.dirname(it.filename));
 
+  core.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
+
   const promises = diffingDirs.map(async (dir) => {
     const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(`${dir}/${configFileName}`, 'utf-8')) as any;
+    core.debug(`configFile: ${configFile}`);
     const tagPrefix = `refs/tags/${configFile.repository}-`;
     const { data } = await octokit.rest.git.listMatchingRefs({
       ...context.repo,
       ref: tagPrefix,
     });
     const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).reverse()[0];
+    core.debug(`latestVersion: ${latestVersion}`);
 
     const newHeadVer = generateHeadVer(configFile.head, latestVersion);
+    core.debug(`newHeadVer: ${newHeadVer}`);
 
     const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`
 
