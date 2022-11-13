@@ -65,6 +65,7 @@ async function main() {
         ...context.repo,
         ref: tagPrefix,
       });
+      core.debug(`data: ${JSON.stringify(data)}`);
       const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).sort().reverse()[0];
       core.debug(`latestVersion: ${latestVersion}`);
 
