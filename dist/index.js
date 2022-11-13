@@ -856,7 +856,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug("making CONNECT request");
+      debug2("making CONNECT request");
       var connectReq = self.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -876,7 +876,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug(
+          debug2(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -888,7 +888,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug("got illegal response body from proxy");
+          debug2("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -896,13 +896,13 @@ var require_tunnel = __commonJS({
           self.removeSocket(placeholder);
           return;
         }
-        debug("tunneling connection has established");
+        debug2("tunneling connection has established");
         self.sockets[self.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug(
+        debug2(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -964,9 +964,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug;
+    var debug2;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug = function() {
+      debug2 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -976,10 +976,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug = function() {
+      debug2 = function() {
       };
     }
-    exports.debug = debug;
+    exports.debug = debug2;
   }
 });
 
@@ -2101,10 +2101,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug(message) {
+    function debug2(message) {
       command_1.issueCommand("debug", {}, message);
     }
-    exports.debug = debug;
+    exports.debug = debug2;
     function error(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -11252,7 +11252,7 @@ var getWeekNumber = (date) => {
   return 1 + Math.round(((date.getTime() - week1.getTime()) / 864e5 - 3 + (week1.getDay() + 6) % 7) / 7);
 };
 var generateHeadVer = (head, previous) => {
-  const previousHeadVer = previous.split(".").map((it) => parseInt(it));
+  const previousHeadVer = previous.split(".").map((it) => parseInt(it)) ?? [0, 0, 0];
   const previousHead = previousHeadVer[0];
   let newBuildVer;
   if (previousHead == head) {
@@ -11278,15 +11278,19 @@ var main = async () => {
   });
   const diffingFiles = data.files ?? [];
   const diffingDirs = diffingFiles.filter((it) => it.filename.includes(configFileName)).map((it) => import_path.default.dirname(it.filename));
+  core2.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
   const promises = diffingDirs.map(async (dir) => {
     const configFile = load(fs.readFileSync(`${dir}/${configFileName}`, "utf-8"));
+    core2.debug(`configFile: ${configFile}`);
     const tagPrefix = `refs/tags/${configFile.repository}-`;
     const { data: data2 } = await octokit.rest.git.listMatchingRefs({
       ...import_github.context.repo,
       ref: tagPrefix
     });
     const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).reverse()[0];
+    core2.debug(`latestVersion: ${latestVersion}`);
     const newHeadVer = generateHeadVer(configFile.head, latestVersion);
+    core2.debug(`newHeadVer: ${newHeadVer}`);
     const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`;
     await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
     await exec.exec("docker", ["push", newImageTag]);
