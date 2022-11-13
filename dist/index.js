@@ -11285,13 +11285,13 @@ async function main() {
     core2.debug(`configFilePath: ${configFilePath}`);
     if (fs.existsSync(configFilePath)) {
       const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
-      core2.debug(`configFile: ${configFile}`);
+      core2.debug(`configFile: ${JSON.stringify(configFile)}`);
       const tagPrefix = `refs/tags/${configFile.repository}-`;
       const { data: data2 } = await octokit.rest.git.listMatchingRefs({
         ...import_github.context.repo,
         ref: tagPrefix
       });
-      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).reverse()[0];
+      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).sort().reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
