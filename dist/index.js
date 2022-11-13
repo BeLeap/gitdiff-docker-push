@@ -11267,6 +11267,7 @@ var main = async () => {
   const githubToken = core2.getInput("github-token", { required: false });
   const registry = core2.getInput("registry", { required: false });
   const configFileName = core2.getInput("config-file-name", { required: false });
+  core2.debug(`input: ${JSON.stringify({ registry, configFileName })}`);
   if (import_github.context.eventName !== "push") {
     throw new Error(`${import_github.context.eventName} not supported`);
   }
