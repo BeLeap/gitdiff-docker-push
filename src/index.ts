@@ -60,13 +60,13 @@ async function main() {
     if (fs.existsSync(configFilePath)) {
       const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
       core.debug(`configFile: ${JSON.stringify(configFile)}`);
-      const tagPrefix = `refs/tags/${configFile.repository}-`;
+      const tagPrefix = `${configFile.repository}-`;
       const { data } = await octokit.rest.git.listMatchingRefs({
         ...context.repo,
-        ref: tagPrefix,
+        ref: `tags/${tagPrefix}`,
       });
       core.debug(`data: ${JSON.stringify(data)}`);
-      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).sort().reverse()[0];
+      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, '')).sort().reverse()[0];
       core.debug(`latestVersion: ${latestVersion}`);
 
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
@@ -78,7 +78,7 @@ async function main() {
       await exec.exec("docker", ["push", newImageTag]);
       return octokit.rest.git.createRef({
         ...context.repo,
-        ref: `${tagPrefix}${newHeadVer}`,
+        ref: `refs/tags/${tagPrefix}${newHeadVer}`,
         sha: context.payload["after"],
       });
     }
