@@ -65,7 +65,7 @@ async function main() {
         ...context.repo,
         ref: tagPrefix,
       });
-      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).reverse()[0];
+      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(tagPrefix, '')).sort().reverse()[0];
       core.debug(`latestVersion: ${latestVersion}`);
 
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
