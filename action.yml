@@ -7,9 +7,9 @@ inputs:
     required: false
     default: 'registry.hub.docker.com'
   username:
-    required: true
+    required: false
   password:
-    required: true
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
