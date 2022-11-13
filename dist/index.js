@@ -11280,25 +11280,28 @@ var main = async () => {
   const diffingDirs = diffingFiles.filter((it) => it.filename.includes(configFileName) || it.filename.includes("Dockerfile")).map((it) => import_path.default.dirname(it.filename));
   core2.debug(`diffingDirs: ${JSON.stringify(diffingDirs)}`);
   const promises = diffingDirs.map(async (dir) => {
-    const configFile = load(fs.readFileSync(`${dir}/${configFileName}`, "utf-8"));
-    core2.debug(`configFile: ${configFile}`);
-    const tagPrefix = `refs/tags/${configFile.repository}-`;
-    const { data: data2 } = await octokit.rest.git.listMatchingRefs({
-      ...import_github.context.repo,
-      ref: tagPrefix
-    });
-    const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).reverse()[0];
-    core2.debug(`latestVersion: ${latestVersion}`);
-    const newHeadVer = generateHeadVer(configFile.head, latestVersion);
-    core2.debug(`newHeadVer: ${newHeadVer}`);
-    const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`;
-    await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
-    await exec.exec("docker", ["push", newImageTag]);
-    return octokit.rest.git.createRef({
-      ...import_github.context.repo,
-      ref: `${tagPrefix}${newHeadVer}`,
-      sha: import_github.context.payload["after"]
-    });
+    const configFilePath = `${dir}/${configFileName}`;
+    if (fs.existsSync(configFilePath)) {
+      const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
+      core2.debug(`configFile: ${configFile}`);
+      const tagPrefix = `refs/tags/${configFile.repository}-`;
+      const { data: data2 } = await octokit.rest.git.listMatchingRefs({
+        ...import_github.context.repo,
+        ref: tagPrefix
+      });
+      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(tagPrefix, "")).reverse()[0];
+      core2.debug(`latestVersion: ${latestVersion}`);
+      const newHeadVer = generateHeadVer(configFile.head, latestVersion);
+      core2.debug(`newHeadVer: ${newHeadVer}`);
+      const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`;
+      await exec.exec("docker", ["build", "--tag", newImageTag, "--context", dir, dir]);
+      await exec.exec("docker", ["push", newImageTag]);
+      return octokit.rest.git.createRef({
+        ...import_github.context.repo,
+        ref: `${tagPrefix}${newHeadVer}`,
+        sha: import_github.context.payload["after"]
+      });
+    }
   });
   await Promise.all(promises);
 };
