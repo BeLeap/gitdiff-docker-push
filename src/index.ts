@@ -59,7 +59,7 @@ async function main() {
 
     if (fs.existsSync(configFilePath)) {
       const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
-      core.debug(`configFile: ${configFile}`);
+      core.debug(`configFile: ${JSON.stringify(configFile)}`);
       const tagPrefix = `refs/tags/${configFile.repository}-`;
       const { data } = await octokit.rest.git.listMatchingRefs({
         ...context.repo,
