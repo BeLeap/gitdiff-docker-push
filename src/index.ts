@@ -27,7 +27,7 @@ const generateHeadVer = (head: number, previous: string = '0.0.0'): string => {
   }
 
   const date = new Date();
-  return `${head}.${date.getFullYear() % 100}${getWeekNumber(date)}.${newBuildVer}`;
+  return `${head}.${(date.getFullYear() % 100).toString().padStart(2, '0')}${getWeekNumber(date).toString().padStart(2, '0')}.${newBuildVer}`;
 }
 
 async function main() {
