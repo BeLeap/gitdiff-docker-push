@@ -11267,6 +11267,7 @@ async function main() {
   const githubToken = core2.getInput("github-token", { required: false });
   const registry = core2.getInput("registry", { required: false });
   const configFileName = core2.getInput("config-file-name", { required: false });
+  const tagPrefix = core2.getInput("tag-prefix", { required: false });
   core2.debug(`input: ${JSON.stringify({ registry, configFileName })}`);
   if (import_github.context.eventName !== "push") {
     throw new Error(`${import_github.context.eventName} not supported`);
@@ -11286,13 +11287,13 @@ async function main() {
     if (fs.existsSync(configFilePath)) {
       const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
       core2.debug(`configFile: ${JSON.stringify(configFile)}`);
-      const tagPrefix = `${configFile.repository}-`;
+      const tagPrefixWithRepo = `${tagPrefix ? `${tagPrefix}-` : ""}${configFile.repository}-`;
       const { data: data2 } = await octokit.rest.git.listMatchingRefs({
         ...import_github.context.repo,
-        ref: `tags/${tagPrefix}`
+        ref: `tags/${tagPrefixWithRepo}`
       });
       core2.debug(`data: ${JSON.stringify(data2)}`);
-      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, "")).sort().reverse()[0];
+      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefixWithRepo}`, "")).sort().reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
@@ -11301,7 +11302,7 @@ async function main() {
       await exec.exec("docker", ["push", newImageTag]);
       return octokit.rest.git.createRef({
         ...import_github.context.repo,
-        ref: `refs/tags/${tagPrefix}${newHeadVer}`,
+        ref: `refs/tags/${tagPrefixWithRepo}${newHeadVer}`,
         sha: import_github.context.payload["after"]
       });
     }
