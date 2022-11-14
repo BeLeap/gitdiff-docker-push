@@ -13,7 +13,7 @@ c.f. `dockermeta.yaml`(configFile) name is configurable
 
 Example:
 
-```
+```yaml
 head: 1
 registries:
  - public.ecr.aws
