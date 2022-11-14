@@ -34,6 +34,7 @@ async function main() {
   const githubToken = core.getInput('github-token', { required: false });
   const registry = core.getInput('registry', { required: false });
   const configFileName = core.getInput('config-file-name', { required: false });
+  const tagPrefix: string | undefined = core.getInput('tag-prefix', { required: false });
 
   core.debug(`input: ${JSON.stringify({ registry, configFileName })}`);
 
@@ -60,13 +61,13 @@ async function main() {
     if (fs.existsSync(configFilePath)) {
       const configFile: { repository: string, head: number } = yaml.load(fs.readFileSync(configFilePath, 'utf-8')) as any;
       core.debug(`configFile: ${JSON.stringify(configFile)}`);
-      const tagPrefix = `${configFile.repository}-`;
+      const tagPrefixWithRepo = `${tagPrefix ? `${tagPrefix}-` : ''}${configFile.repository}-`;
       const { data } = await octokit.rest.git.listMatchingRefs({
         ...context.repo,
-        ref: `tags/${tagPrefix}`,
+        ref: `tags/${tagPrefixWithRepo}`,
       });
       core.debug(`data: ${JSON.stringify(data)}`);
-      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, '')).sort().reverse()[0];
+      const latestVersion = data.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefixWithRepo}`, '')).sort().reverse()[0];
       core.debug(`latestVersion: ${latestVersion}`);
 
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
@@ -78,7 +79,7 @@ async function main() {
       await exec.exec("docker", ["push", newImageTag]);
       return octokit.rest.git.createRef({
         ...context.repo,
-        ref: `refs/tags/${tagPrefix}${newHeadVer}`,
+        ref: `refs/tags/${tagPrefixWithRepo}${newHeadVer}`,
         sha: context.payload["after"],
       });
     }
