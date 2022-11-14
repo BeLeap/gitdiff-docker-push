@@ -11261,7 +11261,7 @@ var generateHeadVer = (head, previous = "0.0.0") => {
     newBuildVer = 0;
   }
   const date = new Date();
-  return `${head}.${date.getFullYear() % 100}${getWeekNumber(date)}.${newBuildVer}`;
+  return `${head}.${(date.getFullYear() % 100).toString().padStart(2, "0")}${getWeekNumber(date).toString().padStart(2, "0")}.${newBuildVer}`;
 };
 async function main() {
   const githubToken = core2.getInput("github-token", { required: false });
