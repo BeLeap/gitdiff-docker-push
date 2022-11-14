@@ -3,9 +3,6 @@ description: 'Check git diff & Push docker images'
 inputs:
   github-token:
     required: false
-  registry:
-    required: false
-    default: 'registry.hub.docker.com'
   config-file-name:
     required: false
     default: 'dockermeta.yaml'
