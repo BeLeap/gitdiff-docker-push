@@ -11265,10 +11265,7 @@ var generateHeadVer = (head, previous = "0.0.0") => {
 };
 async function main() {
   const githubToken = core2.getInput("github-token", { required: false });
-  const registry = core2.getInput("registry", { required: false });
   const configFileName = core2.getInput("config-file-name", { required: false });
-  const tagPrefix = core2.getInput("tag-prefix", { required: false });
-  core2.debug(`input: ${JSON.stringify({ registry, configFileName })}`);
   if (import_github.context.eventName !== "push") {
     throw new Error(`${import_github.context.eventName} not supported`);
   }
@@ -11286,23 +11283,29 @@ async function main() {
     core2.debug(`configFilePath: ${configFilePath}`);
     if (fs.existsSync(configFilePath)) {
       const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
+      const registries = configFile.registries ?? [];
       core2.debug(`configFile: ${JSON.stringify(configFile)}`);
-      const tagPrefixWithRepo = `${tagPrefix ? `${tagPrefix}-` : ""}${configFile.repository}-`;
+      const tagPrefix = `${configFile.repository}-`;
       const { data: data2 } = await octokit.rest.git.listMatchingRefs({
         ...import_github.context.repo,
-        ref: `tags/${tagPrefixWithRepo}`
+        ref: `tags/${tagPrefix}`
       });
       core2.debug(`data: ${JSON.stringify(data2)}`);
-      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefixWithRepo}`, "")).sort().reverse()[0];
+      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, "")).sort().reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
-      const newImageTag = `${registry}/${configFile.repository}:${newHeadVer}`;
+      const newImageTag = `${configFile.repository}:${newHeadVer}`;
       await exec.exec("docker", ["build", "--tag", newImageTag, dir]);
-      await exec.exec("docker", ["push", newImageTag]);
+      for (const registry of registries) {
+        const newImageTagWithRegistry = `${registry}/${newImageTag}`;
+        await exec.exec("docker", ["image", "tag", newImageTag, newImageTagWithRegistry]);
+        await exec.exec("docker", ["push", newImageTagWithRegistry]);
+        await exec.exec("docker", ["image", "tag", newImageTagWithRegistry, newImageTag]);
+      }
       return octokit.rest.git.createRef({
         ...import_github.context.repo,
-        ref: `refs/tags/${tagPrefixWithRepo}${newHeadVer}`,
+        ref: `refs/tags/${tagPrefix}${newHeadVer}`,
         sha: import_github.context.payload["after"]
       });
     }
