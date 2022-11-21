@@ -11291,7 +11291,8 @@ async function main() {
         ref: `tags/${tagPrefix}`
       });
       core2.debug(`data: ${JSON.stringify(data2)}`);
-      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, "")).sort().reverse()[0];
+      let collator = new Intl.Collator(void 0, { numeric: true, sensitivity: "base" });
+      const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, "")).sort(collator.compare).reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
       const newHeadVer = generateHeadVer(configFile.head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
