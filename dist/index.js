@@ -11282,10 +11282,8 @@ async function main() {
     const configFilePath = `${dir}/${configFileName}`;
     core2.debug(`configFilePath: ${configFilePath}`);
     if (fs.existsSync(configFilePath)) {
-      const configFile = load(fs.readFileSync(configFilePath, "utf-8"));
-      const registries = configFile.registries ?? [];
-      core2.debug(`configFile: ${JSON.stringify(configFile)}`);
-      const tagPrefix = `${configFile.repository}-`;
+      const { registries = [], repository, head, targetDockerfile = "Dockerfile" } = load(fs.readFileSync(configFilePath, "utf-8"));
+      const tagPrefix = `${repository}-`;
       const { data: data2 } = await octokit.rest.git.listMatchingRefs({
         ...import_github.context.repo,
         ref: `tags/${tagPrefix}`
@@ -11294,10 +11292,10 @@ async function main() {
       let collator = new Intl.Collator(void 0, { numeric: true, sensitivity: "base" });
       const latestVersion = data2.map((it) => it.ref).map((it) => it.replace(`refs/tags/${tagPrefix}`, "")).sort(collator.compare).reverse()[0];
       core2.debug(`latestVersion: ${latestVersion}`);
-      const newHeadVer = generateHeadVer(configFile.head, latestVersion);
+      const newHeadVer = generateHeadVer(head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
-      const newImageTag = `${configFile.repository}:${newHeadVer}`;
-      await exec.exec("docker", ["build", "--tag", newImageTag, dir]);
+      const newImageTag = `${repository}:${newHeadVer}`;
+      await exec.exec("docker", ["build", "-f", targetDockerfile, "--tag", newImageTag, dir]);
       for (const registry of registries) {
         const newImageTagWithRegistry = `${registry}/${newImageTag}`;
         await exec.exec("docker", ["image", "tag", newImageTag, newImageTagWithRegistry]);
