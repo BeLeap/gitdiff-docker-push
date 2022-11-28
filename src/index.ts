@@ -72,7 +72,7 @@ async function main() {
 
       const newImageTag = `${repository}:${newHeadVer}`
 
-      await exec.exec("docker", ["build", "-f", targetDockerfile, "--tag", newImageTag, dir]);
+      await exec.exec("docker", ["build", "-f", `${dir}/${targetDockerfile}`, "--tag", newImageTag, dir]);
 
       for (const registry of registries) {
         const newImageTagWithRegistry = `${registry}/${newImageTag}`;
