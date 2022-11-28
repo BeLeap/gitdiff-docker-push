@@ -11295,7 +11295,7 @@ async function main() {
       const newHeadVer = generateHeadVer(head, latestVersion);
       core2.debug(`newHeadVer: ${newHeadVer}`);
       const newImageTag = `${repository}:${newHeadVer}`;
-      await exec.exec("docker", ["build", "-f", targetDockerfile, "--tag", newImageTag, dir]);
+      await exec.exec("docker", ["build", "-f", `${dir}/${targetDockerfile}`, "--tag", newImageTag, dir]);
       for (const registry of registries) {
         const newImageTagWithRegistry = `${registry}/${newImageTag}`;
         await exec.exec("docker", ["image", "tag", newImageTag, newImageTagWithRegistry]);
